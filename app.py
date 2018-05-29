@@ -6,7 +6,6 @@ from flask_nav.elements import Navbar, View, Subgroup, Link, Text, Separator
 from flask_sqlalchemy import SQLAlchemy
 from oauth import oauth_bp, login_required
 from swerve import swerve
-from models import *
 import os
 
 
@@ -16,6 +15,7 @@ app.register_blueprint(oauth_bp)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+from models import *
 
 
 
