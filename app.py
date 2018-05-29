@@ -5,6 +5,7 @@ from flask_nav.elements import Navbar, View, Subgroup, Link, Text, Separator
 from flask_sqlalchemy import SQLAlchemy
 from oauth import oauth_bp, login_required
 import os
+from utils.dict import Default
 
 
 app = Flask(__name__)
@@ -25,14 +26,19 @@ def index():
 @app.route("/swerve")
 @login_required
 def swerve_to():
-    return swerve(request.args.get('url_key'))
+    swerve_string = request.args.get('swerve_string')
+    params = swerve_string.split(' ')
+    opts = {}
+    for i, opt in enumerate(params[1:]):
+        opts['opt' + str(i + 1)] = opt
+    return swerve(params[0], **opts)
 
 
 @app.route("/add")
 @login_required
 def add_shortcut():
     errors = []
-    new_shortcut = request.args.get('new_shortcut').split(',', 1)
+    new_shortcut = request.args.get('new_shortcut').split(' ', 1)
     key = new_shortcut[0]
     url_template = new_shortcut[1]
 
@@ -52,13 +58,13 @@ def add_shortcut():
     return render_template('index.html', errors=errors)
 
 
-def swerve(key):
+def swerve(key, **kwargs):
     shortcut = db.session.query(Shortcut).filter(Shortcut.key==key).all()
 
     if len(shortcut) == 0:
         return render_template('index.html')  # TODO: redirect to an add view once it exists
 
-    redirect_url = shortcut[0].url_template
+    redirect_url = shortcut[0].url_template.format_map(Default(kwargs))
     return redirect(redirect_url, code=302)
 
 
